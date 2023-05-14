@@ -1,25 +1,27 @@
 require 'set'
 require_relative 'save_game'
-#reads file and stores in memory
+#reads file and stores in global variable memory
 $lines = File.readlines("google-10000-english-no-swears.txt")
 
 class Game
 
 def initialize()
   @secret_word = pick_random_line()
-  @guess_word = Array.new(@secret_word.length,"_")
+
+  puts "Win before 8 guesses!, your secret word is: "
+  puts "_" * @secret_word.length
   
   @secret_word_set = Set.new(@secret_word.split(//))
   @chosen_letters_set = Set.new()
   @count = 0
 end  
 
-def display_guesses()
-  p @guess_word.join()
-end
 
-def chosen_letters()
-  p @chosen_letters_set.to_a
+def progress()
+  p "Guessed letters"
+  p @chosen_letters_set
+  p "Total incorrect guesses: #{@count}"
+
 end
 
 
@@ -34,13 +36,21 @@ end
 
 def pick_letters()
   #asks the user to pick a letter
-  puts "please give a valid letter, or enter (1) to save current game" + "\n"
+  puts "please give a valid letter, or enter (1) to save game or (2) for loading game" + "\n"
   letter = gets.chomp
   puts "#{letter}"
   #check for save command
   if letter.to_i == 1
       save_game()
+      return
   end
+
+  #check for load command
+  if letter.to_i == 2
+    load_game()
+    return
+  end
+
   #function runs again if letter already chosen, more than 1 letter, or not character not from alphabet
   if @chosen_letters_set.include?(letter) || letter.length != 1 || /^[a-zA-Z]$/.match(letter) == nil
       pick_letters
@@ -53,15 +63,22 @@ end
 
 def update_blanks()
   #checks the players set of chosen letters against the "secret word"
+  guess_word = Array.new(@secret_word.length,"_")
   @secret_word.split(//).each_with_index do |letter, index|
     #when a matched letter is found, the guessed word is updated
     if @chosen_letters_set.include?(letter)
-      @guess_word[index] = letter
+      guess_word[index] = letter
     end
   end
+  puts guess_word.join()
 end
 
 def hang_counter(selected)
+
+  if selected == nil
+    return @count
+  end
+
   @chosen_letters_set.add(selected)
   if @secret_word_set.include?(selected)
     return @count
@@ -87,17 +104,17 @@ end
 x = Game.new()
 
 while true
-  x.display_guesses()
+  # x.display_guesses(guess_word)
   value = x.pick_letters()
 
-  #if more than 6 guess, game ends
-  if x.hang_counter(value) > 6
+  #if more than 7 guesses, game ends
+  if x.hang_counter(value) > 7
     puts "you lose, you had too many guesses"
     break
   end
   
   x.update_blanks()
-  x.chosen_letters()
+  x.progress()
 
   #true means all secret letters were correctly guessed correctly
   if x.compare_set() == true
