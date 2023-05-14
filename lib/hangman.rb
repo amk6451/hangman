@@ -1,4 +1,5 @@
 require 'set'
+require_relative 'save_game'
 #reads file and stores in memory
 $lines = File.readlines("google-10000-english-no-swears.txt")
 
@@ -33,11 +34,16 @@ end
 
 def pick_letters()
   #asks the user to pick a letter
-  puts "please give a valid letter" + "\n"
+  puts "please give a valid letter, or enter (1) to save current game" + "\n"
   letter = gets.chomp
+  puts "#{letter}"
+  #check for save command
+  if letter.to_i == 1
+      save_game()
+  end
   #function runs again if letter already chosen, more than 1 letter, or not character not from alphabet
   if @chosen_letters_set.include?(letter) || letter.length != 1 || /^[a-zA-Z]$/.match(letter) == nil
-    pick_letters
+      pick_letters
   else
     #adds lowercase letter to set of letters chosen
     return letter.downcase
